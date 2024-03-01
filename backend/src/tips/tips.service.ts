@@ -17,8 +17,11 @@ export class TipsService {
   async createTip(tipDto: TipsDto, userId: number): Promise<boolean> {
     const { receiverUsername, amount } = tipDto;
     const senderId = userId;
-    console.log(userId);
-    console.log('Creating tip for user:');
+
+    console.log(tipDto);
+    console.log(
+      `Request to create tip: Sender ID = ${senderId}, Receiver = ${receiverUsername}, Amount = ${amount}`,
+    );
 
     const queryRunner =
       this.userRepository.manager.connection.createQueryRunner();
@@ -26,19 +29,37 @@ export class TipsService {
     await queryRunner.startTransaction();
 
     try {
-      const results = await queryRunner.manager.query(
-        `SELECT u.user_id, u.lowercase_username, b.balance 
-            FROM "users" u
-            JOIN "balances" b ON u.user_id = b.user_id
-            WHERE u.lowercase_username = $1
-            OR u.user_id = $2`,
-        [receiverUsername.toLowerCase(), senderId],
-      );
+      const queryString = `SELECT u.user_id, u.lowercase_username, b.balance 
+      FROM "users" u
+      JOIN "balances" b ON u.user_id = b.user_id
+      WHERE u.lowercase_username = $1 OR u.user_id = $2`;
 
-      console.log(`Creating tip from user ${senderId} to ${receiverUsername}`);
+      const queryParams = [receiverUsername.toLowerCase(), senderId];
+
+      console.log('Executing query:', queryString);
+      console.log('Query parameters:', queryParams);
+
+      const results = await queryRunner.manager.query(queryString, queryParams);
+      console.log('Results:', results);
 
       if (results.length < 2) {
-        throw new NotFoundException(`One or both users not found.`);
+        const foundSender = results.find(
+          (result) => result.user_id === senderId,
+        );
+        const foundReceiver = results.find(
+          (result) =>
+            result.lowercase_username === receiverUsername.toLowerCase(),
+        );
+        if (!foundSender) {
+          throw new NotFoundException(
+            `Sender with user ID ${senderId} not found.`,
+          );
+        }
+        if (!foundReceiver) {
+          throw new NotFoundException(
+            `Receiver with username ${receiverUsername} not found.`,
+          );
+        }
       }
 
       const senderBalance = results.find(
@@ -47,6 +68,9 @@ export class TipsService {
       const receiverResult = results.find(
         (r) => r.lowercase_username === receiverUsername.toLowerCase(),
       );
+
+      console.log('Sender Balance:', senderBalance);
+      console.log('Receiver Result:', receiverResult);
 
       if (!receiverResult) {
         throw new NotFoundException(
