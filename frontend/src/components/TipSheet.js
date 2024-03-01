@@ -33,6 +33,8 @@ const TipSheet = () => {
     try {
       const { data } = await client.query({
         query: FETCH_BALANCE_QUERY,
+        fetchPolicy: "no-cache",
+        refetchQueries: [{ query: FETCH_BALANCE_QUERY }],
       });
       console.log("Fetched balance:", data.balance);
       setBalance(data.balance);
@@ -82,9 +84,9 @@ const TipSheet = () => {
         setSuccessMessage(
           `Tip of ${amount} sent successfully to ${receiverUsername}!`
         );
-        await fetchBalance();
         setReceiverUsername("");
         setAmount("");
+        await fetchBalance();
       } else {
         alert("Failed to send tip. Please try again.");
       }

@@ -24,7 +24,7 @@ type Mutation {
 }
 
 type Query {
-  balance: Int!
+  balance: Float!
   getTipsReceived: [TipHistoryDto!]!
   getTipsSent: [TipHistoryDto!]!
   user(username: Int!): User!

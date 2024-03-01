@@ -60,6 +60,7 @@ export const login = async (username, password) => {
 };
 
 export const logout = async () => {
+  client.resetStore();
   localStorage.removeItem("username");
   localStorage.removeItem("access_token");
   localStorage.removeItem("user_id");

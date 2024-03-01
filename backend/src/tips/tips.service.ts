@@ -13,7 +13,8 @@ export class TipsService {
     private balanceRepository: Repository<UserBalance>,
     @InjectRepository(Tip) private tipRepository: Repository<Tip>,
   ) {}
-  //create tipping logic below, console.log is just a placeholder
+
+  //addded A LOT of console.logs to help debug
   async createTip(tipDto: TipsDto, userId: number): Promise<boolean> {
     const { receiverUsername, amount } = tipDto;
     const senderId = userId;
@@ -42,6 +43,7 @@ export class TipsService {
       const results = await queryRunner.manager.query(queryString, queryParams);
       console.log('Results:', results);
 
+      //debug logic to check user objects returned
       if (results.length < 2) {
         const foundSender = results.find(
           (result) => result.user_id === senderId,

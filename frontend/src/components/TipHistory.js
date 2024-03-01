@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { gql } from "@apollo/client";
 import {
   Paper,
   Table,
@@ -13,6 +13,40 @@ import {
   Tab,
   Box,
 } from "@mui/material";
+
+const GET_TIPS_SENT = gql`
+  query GetTipsSent($userId: Int!) {
+    tipsSent(userId: $userId) {
+      tip_id
+      sender {
+        username
+      }
+      receiver {
+        username
+      }
+      amount
+      tip_time
+      status
+    }
+  }
+`;
+
+const GET_TIPS_RECEIVED = gql`
+  query GetTipsReceived($userId: Int!) {
+    tipsReceived(userId: $userId) {
+      tip_id
+      sender {
+        username
+      }
+      receiver {
+        username
+      }
+      amount
+      tip_time
+      status
+    }
+  }
+`;
 
 const TabPanel = (props) => {
   const { children, value, index, ...other } = props;
