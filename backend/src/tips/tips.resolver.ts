@@ -21,7 +21,7 @@ export class TipsResolver {
 
   @Query(() => [TipHistoryDto])
   @UseGuards(GqlAuthGuard)
-  async getTipsSent(
+  async getTipsByUserId(
     @GetCurrentUserId() userId: number,
   ): Promise<TipHistoryDto[]> {
     return this.tipsService.getTipsByUserId(userId);
@@ -29,7 +29,7 @@ export class TipsResolver {
 
   @Query(() => [TipHistoryDto])
   @UseGuards(GqlAuthGuard)
-  async getTipsReceived(
+  async getTipsReceivedByUserId(
     @GetCurrentUserId() userId: number,
   ): Promise<TipHistoryDto[]> {
     return this.tipsService.getTipsReceivedByUserId(userId);

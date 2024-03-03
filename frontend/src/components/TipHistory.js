@@ -13,17 +13,14 @@ import {
   Tab,
   Box,
 } from "@mui/material";
+import client from "../apollo-client";
 
 const GET_TIPS_SENT = gql`
-  query GetTipsSent($userId: Int!) {
-    tipsSent(userId: $userId) {
+  query getTipsByUserId {
+    getTipsByUserId {
       tip_id
-      sender {
-        username
-      }
-      receiver {
-        username
-      }
+      sender
+      receiver
       amount
       tip_time
       status
@@ -32,15 +29,11 @@ const GET_TIPS_SENT = gql`
 `;
 
 const GET_TIPS_RECEIVED = gql`
-  query GetTipsReceived($userId: Int!) {
-    tipsReceived(userId: $userId) {
+  query getTipsReceivedByUserId {
+    getTipsReceivedByUserId {
       tip_id
-      sender {
-        username
-      }
-      receiver {
-        username
-      }
+      sender
+      receiver
       amount
       tip_time
       status
@@ -78,37 +71,44 @@ const paperStyle = {
 };
 
 const TipHistorySheet = () => {
-  const [tipHistory, setTipHistory] = useState([]);
   const [tabValue, setTabValue] = useState(0);
+  const [tipSentHistory, setTipSentHistory] = useState([]);
+  const [tipReceivedHistory, setTipReceivedHistory] = useState([]);
+  const userId = parseInt(localStorage.getItem("user_id")); // Make sure you have the user ID
+  console.log(userId);
 
-  const handleChange = (event, newValue) => {
-    setTabValue(newValue);
-    fetchTipHistory(newValue);
+  const fetchTipHistorySent = async () => {
+    try {
+      const { data } = await client.query({ query: GET_TIPS_SENT });
+      console.log(data); // Log the structure of your received data
+      setTipSentHistory(data.getTipsByUserId || []);
+    } catch (error) {
+      console.error("Failed to fetch tip history:", error);
+    }
   };
 
-  const fetchTipHistory = async (tabIndex) => {
+  const fetchTipHistoryReceived = async () => {
     try {
-      const accessToken = localStorage.getItem("access_token");
-      if (!accessToken)
-        throw new Error("No access token found. Please log in.");
-
-      let url = "http://localhost:3333/tips/history";
-      if (tabIndex === 1) url = "http://localhost:3333/tips/history-received";
-
-      const response = await axios.get(url, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      setTipHistory(response.data);
+      const { data } = await client.query({ query: GET_TIPS_RECEIVED });
+      console.log(data); // Log the structure of your received data
+      setTipReceivedHistory(data.getTipsReceivedByUserId || []);
     } catch (error) {
       console.error("Failed to fetch tip history:", error);
     }
   };
 
   useEffect(() => {
-    fetchTipHistory(tabValue);
+    if (tabValue === 0) {
+      fetchTipHistorySent();
+    } else {
+      fetchTipHistoryReceived();
+    }
   }, [tabValue]);
 
-  //style and table structure below here
+  const handleChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
+
   return (
     <Container maxWidth="md" style={{ marginTop: "40px" }}>
       <Paper elevation={10} style={paperStyle}>
@@ -117,79 +117,78 @@ const TipHistorySheet = () => {
           <Tab label="Tips Received" />
         </Tabs>
 
-        <TabPanel value={tabValue} index={0}>
-          <Typography
-            variant="h4"
-            style={{ textAlign: "center", fontWeight: "bold" }}
-          >
-            Tips Sent
-          </Typography>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell style={fontStyle}>Sender</TableCell>
-                <TableCell style={fontStyle}>Receiver</TableCell>
-                <TableCell style={fontStyle}>Amount</TableCell>
-                <TableCell style={fontStyle}>Time</TableCell>
-                <TableCell style={fontStyle}>Date</TableCell>
-                <TableCell style={fontStyle}>Status</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {tipHistory.map((tip, index) => (
-                <TableRow key={index}>
-                  <TableCell>{tip.senderUsername}</TableCell>
-                  <TableCell>{tip.receiverUsername}</TableCell>
-                  <TableCell>{tip.amount}</TableCell>
-                  <TableCell>
-                    {new Date(tip.tipTime).toLocaleTimeString()}
-                  </TableCell>
-                  <TableCell>
-                    {new Date(tip.tipTime).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>{tip.status}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TabPanel>
-        {/*tips received below this line*/}
-        <TabPanel value={tabValue} index={1}>
-          <Typography
-            variant="h4"
-            style={{ textAlign: "center", fontWeight: "bold" }}
-          >
-            Tips Received
-          </Typography>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell style={fontStyle}>Sender</TableCell>
-                <TableCell style={fontStyle}>Receiver</TableCell>
-                <TableCell style={fontStyle}>Amount</TableCell>
-                <TableCell style={fontStyle}>Time</TableCell>
-                <TableCell style={fontStyle}>Date</TableCell>
-                <TableCell style={fontStyle}>Status</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {tipHistory.map((tip, index) => (
-                <TableRow key={index}>
-                  <TableCell>{tip.senderUsername}</TableCell>
-                  <TableCell>{tip.receiverUsername}</TableCell>
-                  <TableCell>{tip.amount}</TableCell>
-                  <TableCell>
-                    {new Date(tip.tipTime).toLocaleTimeString()}
-                  </TableCell>
-                  <TableCell>
-                    {new Date(tip.tipTime).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>{tip.status}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TabPanel>
+        {
+          <>
+            <TabPanel value={tabValue} index={0}>
+              <Typography
+                variant="h4"
+                style={{ textAlign: "center", fontWeight: "bold" }}
+              >
+                Tips Sent
+              </Typography>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell style={fontStyle}>Receiver</TableCell>
+                    <TableCell style={fontStyle}>Amount</TableCell>
+                    <TableCell style={fontStyle}>Time</TableCell>
+                    <TableCell style={fontStyle}>Date</TableCell>
+                    <TableCell style={fontStyle}>Status</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {tipSentHistory?.map((tip, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{tip.receiver}</TableCell>
+                      <TableCell>{tip.amount}</TableCell>
+                      <TableCell>
+                        {new Date(tip.tip_time).toLocaleTimeString()}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(tip.tip_time).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>{tip.status}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TabPanel>
+            <TabPanel value={tabValue} index={1}>
+              <Typography
+                variant="h4"
+                style={{ textAlign: "center", fontWeight: "bold" }}
+              >
+                Tips Received
+              </Typography>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell style={fontStyle}>Sender</TableCell>
+                    <TableCell style={fontStyle}>Amount</TableCell>
+                    <TableCell style={fontStyle}>Time</TableCell>
+                    <TableCell style={fontStyle}>Date</TableCell>
+                    <TableCell style={fontStyle}>Status</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {tipReceivedHistory?.map((tip, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{tip.sender}</TableCell>
+                      <TableCell>{tip.amount}</TableCell>
+                      <TableCell>
+                        {new Date(tip.tip_time).toLocaleTimeString()}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(tip.tip_time).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>{tip.status}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TabPanel>
+          </>
+        }
       </Paper>
     </Container>
   );

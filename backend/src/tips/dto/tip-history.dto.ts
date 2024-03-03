@@ -1,6 +1,6 @@
 import { ObjectType, Field, Float, Int } from '@nestjs/graphql';
 
-@ObjectType() // Marks the class as a GraphQL type
+@ObjectType()
 export class TipHistoryDto {
   @Field(() => Int)
   tip_id: number;
@@ -22,8 +22,8 @@ export class TipHistoryDto {
 
   constructor(tip: any) {
     this.tip_id = tip.tip_id;
-    this.sender = tip.sender?.username;
-    this.receiver = tip.receiver?.username;
+    this.sender = tip.sender;
+    this.receiver = tip.receiver;
     this.amount = tip.amount;
     this.tip_time = tip.tip_time;
     this.status = tip.status;
