@@ -5,6 +5,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TipsModule } from './tips/tips.module';
+import { StakingModule } from './staking/staking.module';
 import config from '../ormconfig';
 
 @Module({
@@ -19,6 +20,7 @@ import config from '../ormconfig';
     UsersModule,
     AuthModule,
     TipsModule,
+    StakingModule,
   ],
   controllers: [],
   providers: [],

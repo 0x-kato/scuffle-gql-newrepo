@@ -6,10 +6,10 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { ObjectType, Field, Int, Float } from '@nestjs/graphql';
-import { User } from './user.entity'; // Adjust the import path as necessary
+import { User } from './user.entity';
 
 @ObjectType()
-@Entity({ name: 'balances' }) // This maps the entity to the "balances" table in your database
+@Entity({ name: 'balances' })
 export class UserBalance {
   @Field(() => Int)
   @PrimaryGeneratedColumn()
