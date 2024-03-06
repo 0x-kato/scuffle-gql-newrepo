@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { StakingPool } from './staking-pool.entity';
+import { User } from './user.entity';
 
 @ObjectType()
 @Entity({ name: 'stakes' })
@@ -32,7 +33,15 @@ export class Stake {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @Field(() => Date, { nullable: true })
+  @CreateDateColumn({ nullable: true })
+  lastClaimedAt: Date;
+
   @Field(() => StakingPool)
   @ManyToOne(() => StakingPool, (pool) => pool.stakes)
   pool: StakingPool;
+
+  @Field(() => User)
+  @ManyToOne(() => User, (user) => user.stakes)
+  user: User;
 }

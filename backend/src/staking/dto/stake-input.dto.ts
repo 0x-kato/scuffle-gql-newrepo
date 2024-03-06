@@ -4,7 +4,6 @@ import { Field, InputType } from '@nestjs/graphql';
 export default class StakeDto {
   userId: number;
 
-  //might need getGetPoolId() decorator for resolver
   poolId: number;
 
   @Field()

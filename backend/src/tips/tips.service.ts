@@ -148,6 +148,7 @@ export class TipsService {
     return tipDtos;
   }
 
+  //changed code here due to debugging -- wanted to logs the tips before pushing to map
   async getTipsReceivedByUserId(userId: number): Promise<TipHistoryDto[]> {
     console.log('Getting tips received by user ID:', userId);
     const tips = await this.tipRepository.find({

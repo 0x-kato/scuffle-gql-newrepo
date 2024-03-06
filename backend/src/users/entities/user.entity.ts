@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { Tip } from './tip.entity';
 import { UserBalance } from './user-balance.entity';
+import { Stake } from './stake.entity';
 
 @ObjectType()
 @Entity({ name: 'users' })
@@ -48,4 +49,8 @@ export class User {
   @OneToMany(() => UserBalance, (userBalance) => userBalance.user)
   @Field(() => [UserBalance])
   balances: UserBalance[];
+
+  @OneToMany(() => Stake, (stake) => stake.user)
+  @Field(() => [Stake])
+  stakes: Stake[];
 }
