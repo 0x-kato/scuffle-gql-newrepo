@@ -4,6 +4,7 @@ import { Stake, StakingPool, User, UserBalance } from 'src/users/entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { differenceInSeconds } from 'date-fns';
+import { StakeDetails } from 'src/common/types/stake-details.types';
 
 @Injectable()
 export class StakingService {
@@ -16,23 +17,88 @@ export class StakingService {
     private stakingPoolRepository: Repository<StakingPool>,
   ) {}
 
-  async getStake(userId: number, poolId: number) {
-    //will retrieve user's stake in a pool
-    return this.stakeRepository.findOne({
+  async getStake(userId: number, poolId: number): Promise<StakeDetails> {
+    const stake = await this.stakeRepository.findOne({
       where: {
         user: { user_id: userId },
         pool: { id: poolId },
       },
+      relations: ['user', 'pool'],
     });
+
+    if (!stake) {
+      throw new Error('Stake not found');
+    }
+
+    const rewards = await this.calculateRewards(stake);
+    console.log(rewards);
+
+    return {
+      amount: stake.amount,
+      interestAccumulated: rewards,
+    };
   }
 
-  //building function to let users stake their "tokens" into a staking pool
-  //function will take in the amount of tokens to stake and the user's id
-  //function will return a success message with amount of tokens staked
+  async addToStake(userId: number, poolId: number, stakeInput: StakeDto) {
+    const queryRunner =
+      this.userRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const stake = await this.stakeRepository.findOne({
+        where: {
+          user: { user_id: userId },
+          pool: { id: poolId },
+        },
+      });
+
+      if (!stake) {
+        throw new Error('Stake not found.');
+      }
+
+      const userBalance = await this.balanceRepository.findOne({
+        where: {
+          user_id: userId,
+        },
+      });
+
+      if (!userBalance || userBalance.balance < stakeInput.amount) {
+        throw new Error('Insufficient balance.');
+      }
+
+      //added logic to update stake with rewards amount
+      // prevents calculation errors of the rewards
+      //can also be considered a "compounding" feature
+      stake.amount += await this.calculateRewards(stake);
+      stake.lastClaimedAt = new Date();
+
+      stake.amount += stakeInput.amount;
+      userBalance.balance -= stakeInput.amount;
+
+      await queryRunner.manager.save(stake);
+      await queryRunner.manager.save(userBalance);
+
+      await queryRunner.commitTransaction();
+
+      return `Added ${stakeInput.amount} tokens to existing stake`;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
 
   async stakeTokens(userId: number, poolId: number, stakeInput: StakeDto) {
     const stakerId = userId;
     const { amount } = stakeInput;
+
+    //check for existing stake
+    const existingStake = await this.getStake(userId, poolId);
+    if (existingStake) {
+      return this.addToStake(userId, poolId, stakeInput);
+    }
 
     //execute transaction to stake tokens
     const queryRunner =
@@ -42,6 +108,12 @@ export class StakingService {
 
     try {
       const userBalance = await this.balanceRepository.findOne({
+        where: {
+          user_id: stakerId,
+        },
+      });
+
+      const userId = await this.userRepository.findOne({
         where: {
           user_id: stakerId,
         },
@@ -60,7 +132,7 @@ export class StakingService {
       const stake = new Stake();
       stake.amount = amount;
       stake.pool = stakingPool;
-      stake.user = userBalance.user;
+      stake.user = userId;
 
       //save stake and update user's balance
       await queryRunner.manager.save(stake);
@@ -70,6 +142,8 @@ export class StakingService {
         throw new Error('Insufficient balance');
       }
 
+      return `Staked ${stakeInput.amount} tokens in pool ${poolId}`;
+
       //commit transaction
       await queryRunner.commitTransaction();
     } catch (error) {
@@ -78,12 +152,18 @@ export class StakingService {
     } finally {
       await queryRunner.release();
     }
-
-    return `Staked ${stakeInput.amount} tokens in pool ${poolId}`;
   }
 
   async calculateRewards(stake: Stake): Promise<number> {
-    const interestRate = stake.pool.interestRate / 100;
+    const stakeInQ = await this.stakeRepository.findOne({
+      where: { id: stake.id },
+      relations: ['pool'],
+    });
+    if (!stakeInQ) {
+      throw new Error(`Pool with id ${stake.pool.id} not found.`);
+    }
+    console.log(stakeInQ);
+    const interestRate = stakeInQ.pool.interestRate / 100;
     const today = new Date();
     const lastClaimedDate = stake.lastClaimedAt || stake.createdAt;
     const timeDiff = differenceInSeconds(today, lastClaimedDate);
@@ -106,9 +186,6 @@ export class StakingService {
     await queryRunner.startTransaction();
 
     try {
-      //unstake logic takes amount from dto and subtracts from stake amount
-      //if amount is greater than stake amount, throw error
-
       const userBalance = await this.balanceRepository.findOne({
         where: {
           user_id: stakerId,
@@ -132,6 +209,10 @@ export class StakingService {
         throw new Error('Insufficient stake amount');
       }
 
+      if (amount > stake.amount) {
+        throw new Error('Insufficient stake amount');
+      }
+
       //remove from stake
       stake.amount -= amount;
 
@@ -140,6 +221,11 @@ export class StakingService {
 
       //update user's balance with rewards
       userBalance.balance += await this.calculateRewards(stake);
+      stake.lastClaimedAt = new Date();
+
+      await queryRunner.manager.save(stake);
+      await queryRunner.manager.save(userBalance);
+      await queryRunner.commitTransaction();
 
       //save stake and update user's balance
     } catch (error) {
@@ -157,6 +243,7 @@ export class StakingService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
+    console.log('withdrawRewards called');
     try {
       const userBalance = await this.balanceRepository.findOne({
         where: {
@@ -176,9 +263,7 @@ export class StakingService {
           pool: stakingPool,
         },
       });
-
       userBalance.balance += await this.calculateRewards(stake);
-
       //pass in update to claim date so that it resets the available rewards
       stake.lastClaimedAt = new Date();
 
@@ -186,6 +271,8 @@ export class StakingService {
       await queryRunner.manager.save(stake);
 
       await queryRunner.commitTransaction();
+
+      return `Withdrew rewards from pool ${poolId}`;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;

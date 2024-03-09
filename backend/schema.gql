@@ -18,17 +18,46 @@ input LoginUserInput {
 }
 
 type Mutation {
+  addToStake(stakeInput: StakeDto!): String!
   createTip(tipInput: TipsDto!): Boolean!
   login(loginUserInput: LoginUserInput!): LoginResponse!
   register(loginUserInput: LoginUserInput!): LoginResponse!
+  stakeTokens(stakeInput: StakeDto!): String!
+  unstakeTokens(unstakeInput: StakeDto!): String!
+  withdrawRewards: String!
 }
 
 type Query {
   balance: Float!
+  getStake: StakeDetails!
   getTipsByUserId: [TipHistoryDto!]!
   getTipsReceivedByUserId: [TipHistoryDto!]!
   user(username: Int!): User!
   users: [User!]!
+}
+
+type Stake {
+  amount: Float!
+  createdAt: DateTime!
+  id: ID!
+  lastClaimedAt: DateTime
+  pool: StakingPool!
+  updatedAt: DateTime!
+  user: User!
+}
+
+type StakeDetails {
+  amount: Float!
+  interestAccumulated: Float!
+}
+
+input StakeDto {
+  amount: Float!
+}
+
+type StakingPool {
+  id: ID!
+  interestRate: Float!
 }
 
 type Tip {
@@ -59,6 +88,7 @@ type User {
   createdAt: DateTime!
   lowercase_username: String!
   password: String!
+  stakes: [Stake!]!
   tipsReceived: [Tip!]!
   tipsSent: [Tip!]!
   updatedAt: DateTime!

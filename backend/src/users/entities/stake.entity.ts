@@ -21,10 +21,6 @@ export class Stake {
   @Column('float')
   amount: number;
 
-  @Field(() => Float)
-  @Column('float', { default: 0 })
-  interestAccumulated: number;
-
   @Field(() => Date)
   @CreateDateColumn()
   createdAt: Date;

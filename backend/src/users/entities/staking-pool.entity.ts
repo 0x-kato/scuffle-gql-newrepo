@@ -9,10 +9,7 @@ export class StakingPool {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Field()
-  @Column()
-  name: string;
-
+  //should be using snake_case instead of camelCase
   @Field(() => Float)
   @Column('float')
   interestRate: number;

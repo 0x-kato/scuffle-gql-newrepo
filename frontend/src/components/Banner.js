@@ -22,6 +22,11 @@ function Banner() {
     setAnchorEl(event.currentTarget);
   };
 
+  const handleStakingSheet = () => {
+    setAnchorEl(null);
+    navigate("/staking");
+  };
+
   const handleSendTip = () => {
     setAnchorEl(null);
     navigate("/tips");
@@ -104,6 +109,7 @@ function Banner() {
                 <MenuItem onClick={handleTippingHistory}>
                   Tipping History
                 </MenuItem>
+                <MenuItem onClick={handleStakingSheet}>Staking</MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </Menu>
             </div>
