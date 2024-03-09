@@ -213,15 +213,15 @@ export class StakingService {
         throw new Error('Insufficient stake amount');
       }
 
+      //update user balance with rewards
+      userBalance.balance += await this.calculateRewards(stake);
+      stake.lastClaimedAt = new Date();
+
       //remove from stake
       stake.amount -= amount;
 
       //update user's balance
       userBalance.balance += amount;
-
-      //update user's balance with rewards
-      userBalance.balance += await this.calculateRewards(stake);
-      stake.lastClaimedAt = new Date();
 
       await queryRunner.manager.save(stake);
       await queryRunner.manager.save(userBalance);
