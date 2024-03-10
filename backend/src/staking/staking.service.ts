@@ -63,10 +63,6 @@ export class StakingService {
         },
       });
 
-      if (!userBalance || userBalance.balance < stakeInput.amount) {
-        throw new Error('Insufficient balance.');
-      }
-
       //added logic to update stake with rewards amount
       // prevents calculation errors of the rewards
       //can also be considered a "compounding" feature
@@ -75,6 +71,10 @@ export class StakingService {
 
       stake.amount += stakeInput.amount;
       userBalance.balance -= stakeInput.amount;
+
+      if (!userBalance || userBalance.balance < stakeInput.amount) {
+        throw new Error('Insufficient balance.');
+      }
 
       await queryRunner.manager.save(stake);
       await queryRunner.manager.save(userBalance);
@@ -205,14 +205,6 @@ export class StakingService {
         },
       });
 
-      if (amount > stake.amount) {
-        throw new Error('Insufficient stake amount');
-      }
-
-      if (amount > stake.amount) {
-        throw new Error('Insufficient stake amount');
-      }
-
       //update user balance with rewards
       userBalance.balance += await this.calculateRewards(stake);
       stake.lastClaimedAt = new Date();
@@ -222,6 +214,10 @@ export class StakingService {
 
       //update user's balance
       userBalance.balance += amount;
+
+      if (amount > stake.amount) {
+        throw new Error('Insufficient stake amount');
+      }
 
       await queryRunner.manager.save(stake);
       await queryRunner.manager.save(userBalance);
@@ -242,6 +238,8 @@ export class StakingService {
       this.userRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+
+    //potential vulnerability: doesn't check if rewards > 0? needed?
 
     console.log('withdrawRewards called');
     try {

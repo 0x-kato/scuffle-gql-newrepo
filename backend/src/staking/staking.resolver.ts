@@ -21,16 +21,7 @@ export class StakingResolver {
     return this.stakingService.getStake(userId, poolId);
   }
 
-  @Mutation(() => String)
-  @UseGuards(GqlAuthGuard)
-  async stakeTokens(
-    @GetCurrentUserId() userId: number,
-    @GetPoolId() poolId: number,
-    @Args('stakeInput') stakeInput: StakeDto,
-  ) {
-    return this.stakingService.stakeTokens(userId, poolId, stakeInput);
-  }
-
+  //add to stake will automatically collect pending rewards to simplify reward calculation
   @Mutation(() => String)
   @UseGuards(GqlAuthGuard)
   async addToStake(
@@ -39,6 +30,16 @@ export class StakingResolver {
     @Args('stakeInput') stakeInput: StakeDto,
   ) {
     return this.stakingService.addToStake(userId, poolId, stakeInput);
+  }
+
+  @Mutation(() => String)
+  @UseGuards(GqlAuthGuard)
+  async stakeTokens(
+    @GetCurrentUserId() userId: number,
+    @GetPoolId() poolId: number,
+    @Args('stakeInput') stakeInput: StakeDto,
+  ) {
+    return this.stakingService.stakeTokens(userId, poolId, stakeInput);
   }
 
   @Mutation(() => String)
