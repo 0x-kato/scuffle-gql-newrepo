@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TipsModule } from './tips/tips.module';
 import { StakingModule } from './staking/staking.module';
 import config from '../ormconfig';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -15,6 +16,9 @@ import config from '../ormconfig';
       autoSchemaFile: 'schema.gql',
       sortSchema: true,
       context: ({ req }) => ({ req }),
+    }),
+    ConfigModule.forRoot({
+      isGlobal: true,
     }),
     TypeOrmModule.forRoot(config),
     UsersModule,
