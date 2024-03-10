@@ -134,13 +134,13 @@ export class StakingService {
       stake.pool = stakingPool;
       stake.user = userId;
 
-      //save stake and update user's balance
-      await queryRunner.manager.save(stake);
-      await queryRunner.manager.save(userBalance);
-
       if (userBalance.balance < amount) {
         throw new Error('Insufficient balance');
       }
+
+      //save stake and update user's balance
+      await queryRunner.manager.save(stake);
+      await queryRunner.manager.save(userBalance);
 
       return `Staked ${stakeInput.amount} tokens in pool ${poolId}`;
 
