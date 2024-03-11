@@ -4,7 +4,7 @@ import { GqlAuthGuard } from 'src/auth/guards';
 import { UseGuards } from '@nestjs/common';
 import TipsDto from './dto/tip-input.dto';
 import { GetCurrentUserId } from 'src/common/decorators/get-user-id.decorator';
-import { TipHistoryDto } from './dto';
+import { Tip } from 'src/users/entities';
 
 @Resolver()
 export class TipsResolver {
@@ -19,19 +19,17 @@ export class TipsResolver {
     return this.tipsService.createTip(tipInput, userId);
   }
 
-  @Query(() => [TipHistoryDto])
+  @Query(() => [Tip])
   @UseGuards(GqlAuthGuard)
-  async getTipsByUserId(
-    @GetCurrentUserId() userId: number,
-  ): Promise<TipHistoryDto[]> {
+  async getTipsByUserId(@GetCurrentUserId() userId: number): Promise<Tip[]> {
     return this.tipsService.getTipsByUserId(userId);
   }
 
-  @Query(() => [TipHistoryDto])
+  @Query(() => [Tip])
   @UseGuards(GqlAuthGuard)
   async getTipsReceivedByUserId(
     @GetCurrentUserId() userId: number,
-  ): Promise<TipHistoryDto[]> {
+  ): Promise<Tip[]> {
     return this.tipsService.getTipsReceivedByUserId(userId);
   }
 }

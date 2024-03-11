@@ -30,8 +30,8 @@ type Mutation {
 type Query {
   balance: Float!
   getStake: StakeDetails!
-  getTipsByUserId: [TipHistoryDto!]!
-  getTipsReceivedByUserId: [TipHistoryDto!]!
+  getTipsByUserId: [Tip!]!
+  getTipsReceivedByUserId: [Tip!]!
   user(username: Int!): User!
   users: [User!]!
 }
@@ -62,17 +62,10 @@ type StakingPool {
 
 type Tip {
   amount: Float!
+  receiverUsername: String!
   receiver_id: Int!
+  senderUsername: String!
   sender_id: Int!
-  status: String!
-  tip_id: Int!
-  tip_time: DateTime!
-}
-
-type TipHistoryDto {
-  amount: Float!
-  receiver: String!
-  sender: String!
   status: String!
   tip_id: Int!
   tip_time: DateTime!

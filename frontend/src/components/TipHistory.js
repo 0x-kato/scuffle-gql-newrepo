@@ -19,8 +19,8 @@ const GET_TIPS_SENT = gql`
   query getTipsByUserId {
     getTipsByUserId {
       tip_id
-      sender
-      receiver
+      senderUsername
+      receiverUsername
       amount
       tip_time
       status
@@ -32,8 +32,8 @@ const GET_TIPS_RECEIVED = gql`
   query getTipsReceivedByUserId {
     getTipsReceivedByUserId {
       tip_id
-      sender
-      receiver
+      senderUsername
+      receiverUsername
       amount
       tip_time
       status
@@ -139,7 +139,7 @@ const TipHistorySheet = () => {
                 <TableBody>
                   {tipSentHistory?.map((tip, index) => (
                     <TableRow key={index}>
-                      <TableCell>{tip.receiver}</TableCell>
+                      <TableCell>{tip.receiverUsername}</TableCell>
                       <TableCell>{tip.amount}</TableCell>
                       <TableCell>
                         {new Date(tip.tip_time).toLocaleTimeString()}
@@ -173,7 +173,7 @@ const TipHistorySheet = () => {
                 <TableBody>
                   {tipReceivedHistory?.map((tip, index) => (
                     <TableRow key={index}>
-                      <TableCell>{tip.sender}</TableCell>
+                      <TableCell>{tip.senderUsername}</TableCell>
                       <TableCell>{tip.amount}</TableCell>
                       <TableCell>
                         {new Date(tip.tip_time).toLocaleTimeString()}
