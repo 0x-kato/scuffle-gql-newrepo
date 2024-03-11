@@ -41,7 +41,17 @@ export class Tip {
   @JoinColumn({ name: 'sender_id' })
   sender: User;
 
+  @Field(() => String, { name: 'senderUsername' })
+  get senderUsername(): string {
+    return this.sender.username;
+  }
+
   @ManyToOne(() => User, (user) => user.tipsReceived)
   @JoinColumn({ name: 'receiver_id' })
   receiver: User;
+
+  @Field(() => String, { name: 'receiverUsername' })
+  get receiverUsername(): string {
+    return this.receiver.username;
+  }
 }

@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Tip, User, UserBalance } from 'src/users/entities';
 import { Repository } from 'typeorm';
 import TipsDto from './dto/tip-input.dto';
-import { TipHistoryDto } from './dto/tip-history.dto';
 
 @Injectable()
 export class TipsService {
@@ -112,68 +111,17 @@ export class TipsService {
     }
   }
 
-  async getTipsByUserId(userId: number): Promise<TipHistoryDto[]> {
-    console.log('Getting tips sent by user ID:', userId);
-    const tips = await this.tipRepository.find({
+  async getTipsByUserId(userId: number): Promise<Tip[]> {
+    return this.tipRepository.find({
       where: { sender_id: userId },
       relations: ['sender', 'receiver'],
     });
-
-    console.log(tips);
-
-    console.log(
-      'Tips:',
-      tips.map((t) => ({
-        tip_id: t.tip_id,
-        sender: t.sender?.username,
-        receiver: t.receiver?.username,
-      })),
-    );
-
-    const validTips = tips.filter((tip) => tip.sender && tip.receiver);
-
-    const tipDtos = validTips.map(
-      (tip) =>
-        new TipHistoryDto({
-          tip_id: tip.tip_id,
-          sender: tip.sender.username,
-          receiver: tip.receiver.username,
-          amount: tip.amount,
-          tip_time: tip.tip_time,
-          status: tip.status,
-        }),
-    );
-
-    console.log('Mapped DTOs:', tipDtos);
-    return tipDtos;
   }
 
-  //changed code here due to debugging -- wanted to logs the tips before pushing to map
-  async getTipsReceivedByUserId(userId: number): Promise<TipHistoryDto[]> {
-    console.log('Getting tips received by user ID:', userId);
-    const tips = await this.tipRepository.find({
-      where: [{ receiver_id: userId }],
+  async getTipsReceivedByUserId(userId: number): Promise<Tip[]> {
+    return this.tipRepository.find({
+      where: { receiver_id: userId },
       relations: ['sender', 'receiver'],
     });
-
-    console.log(tips);
-
-    const tipDtos = tips.map((tip) => {
-      console.log('Current tip:', tip);
-      console.log('Sender username:', tip.sender.username);
-      console.log('Receiver username:', tip.receiver.username);
-
-      return new TipHistoryDto({
-        tip_id: tip.tip_id,
-        sender: tip.sender.username,
-        receiver: tip.receiver.username,
-        amount: tip.amount,
-        tip_time: tip.tip_time,
-        status: tip.status,
-      });
-    });
-
-    console.log('Mapped DTOs:', tipDtos);
-    return tipDtos;
   }
 }
