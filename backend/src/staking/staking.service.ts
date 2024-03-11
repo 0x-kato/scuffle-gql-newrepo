@@ -26,6 +26,7 @@ export class StakingService {
       relations: ['user', 'pool'],
     });
 
+    console.log('GET STAKE CALLED');
     if (!stake) {
       throw new Error('Stake not found');
     }
@@ -39,11 +40,27 @@ export class StakingService {
     };
   }
 
+  async checkStake(userId: number, poolId: number): Promise<boolean> {
+    const stake = await this.stakeRepository.findOne({
+      where: {
+        user: { user_id: userId },
+        pool: { id: poolId },
+      },
+    });
+    console.log('CHECK STAKE CALLED');
+    if (!stake) {
+      return false;
+    }
+
+    return true;
+  }
+
   async addToStake(userId: number, poolId: number, stakeInput: StakeDto) {
     const queryRunner =
       this.userRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+    console.log('ADD TO STAKE CALLED');
 
     try {
       const stake = await this.stakeRepository.findOne({
@@ -93,10 +110,14 @@ export class StakingService {
   async stakeTokens(userId: number, poolId: number, stakeInput: StakeDto) {
     const stakerId = userId;
     const { amount } = stakeInput;
+    console.log('STAKE TOKENS CALLED');
+    console.log(poolId, ' is pool id');
 
-    //check for existing stake
-    const existingStake = await this.getStake(userId, poolId);
+    //updated check to existing stake
+    const existingStake = await this.checkStake(userId, poolId);
     if (existingStake) {
+      console.log('existing stake found');
+      console.log(existingStake);
       return this.addToStake(userId, poolId, stakeInput);
     }
 
@@ -125,6 +146,12 @@ export class StakingService {
         },
       });
 
+      console.log('staking pool:', stakingPool);
+
+      if (userBalance.balance < amount) {
+        throw new Error('Insufficient balance');
+      }
+
       //update user's balance
       userBalance.balance -= amount;
 
@@ -134,18 +161,16 @@ export class StakingService {
       stake.pool = stakingPool;
       stake.user = userId;
 
-      if (userBalance.balance < amount) {
-        throw new Error('Insufficient balance');
-      }
+      console.log(stakingPool);
+      console.log(poolId);
 
       //save stake and update user's balance
       await queryRunner.manager.save(stake);
       await queryRunner.manager.save(userBalance);
 
-      return `Staked ${stakeInput.amount} tokens in pool ${poolId}`;
-
       //commit transaction
       await queryRunner.commitTransaction();
+      return `Staked ${stakeInput.amount} tokens in pool ${poolId}`;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
