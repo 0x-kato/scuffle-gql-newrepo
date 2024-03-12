@@ -4,7 +4,7 @@ import { GqlAuthGuard } from '../auth/guards';
 import { UseGuards } from '@nestjs/common';
 import TipsDto from './dto/tip-input.dto';
 import { GetCurrentUserId } from '../common/decorators';
-import { Tip } from '../users/entities';
+import { Tip } from './../users/entities';
 
 @Resolver()
 export class TipsResolver {

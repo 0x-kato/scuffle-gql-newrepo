@@ -1,3 +1,10 @@
+import {
+  Stake,
+  StakingPool,
+  Tip,
+  User,
+  UserBalance,
+} from './src/users/entities';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
 const config: PostgresConnectionOptions = {
@@ -6,8 +13,8 @@ const config: PostgresConnectionOptions = {
   port: 5432,
   username: 'postgres',
   password: '4591',
-  database: 'ScuffleDB',
-  entities: ['dist/**/*.entity{.ts,.js}'],
+  database: process.env.NODE_ENV == 'TEST' ? 'ScuffleDBtest' : 'ScuffleDB',
+  entities: [User, UserBalance, Tip, Stake, StakingPool],
   synchronize: true,
   migrations: ['dist/migrations/*{.ts,.js}'],
 };

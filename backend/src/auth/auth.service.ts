@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
-import { User, UserBalance } from '../users/entities';
+import { User, UserBalance } from './../users/entities';
 import { JwtService } from '@nestjs/jwt';
 import * as argon from 'argon2';
 import { LoginResponse, LoginUserInput } from './dto';

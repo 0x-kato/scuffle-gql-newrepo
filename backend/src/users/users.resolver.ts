@@ -12,7 +12,6 @@ export class UsersResolver {
   //using guard here to just test out the auth guard
   //definitely not necessary, would most likely guard with an authentication guard i.e. roles
   @Query(() => [User], { name: 'users' })
-  @UseGuards(GqlAuthGuard)
   findAll() {
     return this.usersService.findAll();
   }
