@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Tip, User, UserBalance } from 'src/users/entities';
+import { Tip, User, UserBalance } from '../users/entities';
 import { Repository } from 'typeorm';
 import TipsDto from './dto/tip-input.dto';
 

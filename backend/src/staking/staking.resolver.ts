@@ -1,10 +1,10 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { GqlAuthGuard } from 'src/auth/guards';
-import { GetCurrentUserId, GetPoolId } from 'src/common/decorators';
+import { GqlAuthGuard } from '../auth/guards';
+import { GetCurrentUserId, GetPoolId } from '../common/decorators';
 import StakeDto from './dto/stake-input.dto';
 import { StakingService } from './staking.service';
-import { StakeDetails } from 'src/common/types/stake-details.types';
+import { StakeDetails } from '../common/types';
 
 @Resolver()
 export class StakingResolver {

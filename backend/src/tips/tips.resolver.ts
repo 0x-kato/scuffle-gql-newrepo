@@ -1,10 +1,10 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { TipsService } from './tips.service';
-import { GqlAuthGuard } from 'src/auth/guards';
+import { GqlAuthGuard } from '../auth/guards';
 import { UseGuards } from '@nestjs/common';
 import TipsDto from './dto/tip-input.dto';
-import { GetCurrentUserId } from 'src/common/decorators/get-user-id.decorator';
-import { Tip } from 'src/users/entities';
+import { GetCurrentUserId } from '../common/decorators';
+import { Tip } from '../users/entities';
 
 @Resolver()
 export class TipsResolver {

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import StakeDto from './dto/stake-input.dto';
-import { Stake, StakingPool, User, UserBalance } from 'src/users/entities';
+import { Stake, StakingPool, User, UserBalance } from '../users/entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { differenceInSeconds } from 'date-fns';
-import { StakeDetails } from 'src/common/types/stake-details.types';
+import { StakeDetails } from '../common/types';
+import StakeDto from './dto/stake-input.dto';
 
 @Injectable()
 export class StakingService {
